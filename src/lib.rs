@@ -5,7 +5,7 @@ use web_sys::{CanvasRenderingContext2d, ImageData};
 
 #[wasm_bindgen]
 pub fn draw(ctx: &CanvasRenderingContext2d, width: u32, height: u32) -> Result<(), JsValue> {
-    let f = Field::new_random(width, height);
+    let f = Field::new_white_noise(width, height);
     f.to_canvas(ctx)
 }
 
@@ -29,7 +29,7 @@ impl Field {
         ctx.put_image_data(&data, 0.0, 0.0)
     }
 
-    fn new_random(width: u32, height: u32) -> Self {
+    fn new_white_noise(width: u32, height: u32) -> Self {
         let size = width as usize * height as usize;
         let mut f: Vec<f64> = Vec::with_capacity(size);
         for _ in 0..size {
