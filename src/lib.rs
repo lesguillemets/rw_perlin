@@ -15,6 +15,22 @@ struct TwoDArray<T> {
     h: u32,
 }
 
+#[allow(dead_code)]
+impl<T> TwoDArray<T> {
+    fn at(&self, x: u32, y: u32) -> Option<&T> {
+        self.f.get(x as usize + y as usize * self.w as usize)
+    }
+    fn at_mut(&mut self, x: u32, y: u32) -> Option<&mut T> {
+        self.f.get_mut(x as usize + y as usize * self.w as usize)
+    }
+    fn at_unchecked(&self, x: u32, y: u32) -> &T {
+        &self.f[x as usize + y as usize * self.w as usize]
+    }
+    fn at_unchecked_mut(&mut self, x: u32, y: u32) -> &T {
+        &mut self.f[x as usize + y as usize * self.w as usize]
+    }
+}
+
 // generics are (still) tricky to handle here
 type It = f64; // [-1,1]
 type Field = TwoDArray<It>;
@@ -48,4 +64,33 @@ fn add_to_colour_data(value: It, data: &mut Vec<u8>) {
         data.push((value * 255.0).floor() as u8);
     }
     data.push(255);
+}
+
+struct Perlin {
+    grid_size: u32,
+    z: TwoDArray<f64>,
+}
+
+impl Perlin {
+    fn initialize(grid_size: u32) -> Self {
+        let size = grid_size as usize * grid_size as usize;
+        let mut z = Vec::with_capacity(size);
+        for _ in 0..size {
+            // z ∈ [0,1)
+            z.push(Math::random());
+        }
+        // make it wrap
+        for i in 0..(grid_size as usize) {
+            z[grid_size as usize * (i + 1) - 1] = z[grid_size as usize * i];
+            z[i + grid_size as usize * (grid_size as usize - 1)] = z[i];
+        }
+        Perlin {
+            grid_size,
+            z: TwoDArray {
+                f: z,
+                w: grid_size,
+                h: grid_size,
+            },
+        }
+    }
 }
