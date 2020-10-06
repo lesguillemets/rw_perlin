@@ -104,6 +104,27 @@ impl Perlin {
             },
         }
     }
+
+    fn at(&self, x: f64, y: f64) -> Option<f64> {
+        if x < 0.0 || y < 0.0 || x > (self.grid_size as f64) || y > (self.grid_size as f64) {
+            return None;
+        }
+        let dx = x - x.floor();
+        let dy = y - y.floor();
+        let x0: u32 = x.floor() as u32;
+        let y0: u32 = y.floor() as u32;
+        let grads = [
+            *self.grads.at_unchecked(x0, y0),
+            *self.grads.at_unchecked(x0 + 1, y0),
+            *self.grads.at_unchecked(x0, y0 + 1),
+            *self.grads.at_unchecked(x0 + 1, y0 + 1),
+        ];
+        None
+    }
+}
+
+fn dot_prod((x0, y0): &(f64, f64), (x1, y1): &(f64, f64)) -> f64 {
+    x0 * x1 + y0 * y1
 }
 
 fn random() -> f64 {
