@@ -69,27 +69,38 @@ fn add_to_colour_data(value: It, data: &mut Vec<u8>) {
 struct Perlin {
     grid_size: u32,
     z: TwoDArray<f64>,
+    grads: TwoDArray<(f64, f64)>,
 }
 
 impl Perlin {
     fn initialize(grid_size: u32) -> Self {
-        let size = grid_size as usize * grid_size as usize;
+        let vertex_count = grid_size + 1;
+        let size = (vertex_count as usize) * (vertex_count as usize);
         let mut z = Vec::with_capacity(size);
+        let mut grads = Vec::with_capacity(size);
         for _ in 0..size {
             // z ∈ [0,1)
             z.push(random());
+            let r = 2.0 * std::f64::consts::PI * random();
+            // grads has gradient vector, normalized.
+            grads.push((r.cos(), r.sin()));
         }
         // make it wrap
-        for i in 0..(grid_size as usize) {
-            z[grid_size as usize * (i + 1) - 1] = z[grid_size as usize * i];
-            z[i + grid_size as usize * (grid_size as usize - 1)] = z[i];
+        for i in 0..(vertex_count as usize) {
+            z[vertex_count as usize * (i + 1) - 1] = z[vertex_count as usize * i];
+            z[i + vertex_count as usize * (vertex_count as usize - 1)] = z[i];
         }
         Perlin {
             grid_size,
             z: TwoDArray {
                 f: z,
-                w: grid_size,
-                h: grid_size,
+                w: grid_size + 1,
+                h: grid_size + 1,
+            },
+            grads: TwoDArray {
+                f: grads,
+                w: grid_size + 1,
+                h: grid_size + 1,
             },
         }
     }
@@ -97,4 +108,8 @@ impl Perlin {
 
 fn random() -> f64 {
     Math::random()
+}
+
+fn fade_psi(t: f64) -> f64 {
+    6.0 * t.powi(5) - 15.0 * t.powi(4) + 10.0 * t.powi(3)
 }
