@@ -49,7 +49,7 @@ impl Field {
         let size = width as usize * height as usize;
         let mut f: Vec<f64> = Vec::with_capacity(size);
         for _ in 0..size {
-            f.push(Math::random() * 2.0 - 1.0);
+            f.push(random() * 2.0 - 1.0);
         }
         TwoDArray {
             f,
@@ -77,7 +77,7 @@ impl Perlin {
         let mut z = Vec::with_capacity(size);
         for _ in 0..size {
             // z ∈ [0,1)
-            z.push(Math::random());
+            z.push(random());
         }
         // make it wrap
         for i in 0..(grid_size as usize) {
@@ -93,4 +93,8 @@ impl Perlin {
             },
         }
     }
+}
+
+fn random() -> f64 {
+    Math::random()
 }
