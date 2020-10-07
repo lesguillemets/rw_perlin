@@ -1,4 +1,5 @@
 use js_sys::Math;
+use std::cmp::max;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::Clamped;
 use web_sys::{CanvasRenderingContext2d, ImageData};
@@ -113,13 +114,21 @@ impl Perlin {
         let dy = y - y.floor();
         let x0: u32 = x.floor() as u32;
         let y0: u32 = y.floor() as u32;
-        let grads = [
-            *self.grads.at_unchecked(x0, y0),
-            *self.grads.at_unchecked(x0 + 1, y0),
-            *self.grads.at_unchecked(x0, y0 + 1),
-            *self.grads.at_unchecked(x0 + 1, y0 + 1),
-        ];
-        None
+        let mut dep: f64 = 0.0;
+        for &(cx, cy) in &[(0u32, 0u32), (1, 0), (0, 1), (1, 1)] {
+            let grad = *self.grads.at_unchecked(x0 + cx, y0 + cy);
+            let v = (
+                if cx == 0 { dx } else { 1.0 - dx },
+                if cy == 0 { dy } else { 1.0 - dy },
+            );
+            // add the random height
+            let z: f64 = *self.z.at_unchecked(x0 + cx, y0 + cy);
+
+            dep += fade_psi(v.0.abs())
+                * fade_psi(v.1.abs())
+                * (dot_prod(&v, &grad) + z * RANDOM_Z_WEIGHT);
+        }
+        Some(dep)
     }
 }
 
@@ -131,6 +140,7 @@ fn random() -> f64 {
     Math::random()
 }
 
+const RANDOM_Z_WEIGHT: f64 = 0.5;
 fn fade_psi(t: f64) -> f64 {
     6.0 * t.powi(5) - 15.0 * t.powi(4) + 10.0 * t.powi(3)
 }
