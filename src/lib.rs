@@ -7,7 +7,7 @@ use web_sys::{CanvasRenderingContext2d, ImageData};
 #[wasm_bindgen]
 pub fn draw(ctx: &CanvasRenderingContext2d, width: u32, height: u32) -> Result<(), JsValue> {
     let grids: u32 = 7;
-    let perlin = Perlin::initialize(7);
+    let perlin = Perlin::initialize(grids);
     let mut v: Vec<f64> = Vec::with_capacity((width * height) as usize);
     let scale = (grids as f64) / (max(width, height) as f64);
     for y in 0..height {
