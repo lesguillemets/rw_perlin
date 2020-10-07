@@ -6,7 +6,20 @@ use web_sys::{CanvasRenderingContext2d, ImageData};
 
 #[wasm_bindgen]
 pub fn draw(ctx: &CanvasRenderingContext2d, width: u32, height: u32) -> Result<(), JsValue> {
-    let f = Field::new_white_noise(width, height);
+    let grids: u32 = 7;
+    let perlin = Perlin::initialize(7);
+    let mut v: Vec<f64> = Vec::with_capacity((width * height) as usize);
+    let scale = (grids as f64) / (max(width, height) as f64);
+    for y in 0..height {
+        for x in 0..width {
+            v.push(perlin.at(scale * x as f64, scale * y as f64).unwrap_or(0.0));
+        }
+    }
+    let f = Field {
+        f: v,
+        w: width,
+        h: height,
+    };
     f.to_canvas(ctx)
 }
 
@@ -39,13 +52,26 @@ type Field = TwoDArray<It>;
 impl Field {
     fn to_canvas(&self, ctx: &CanvasRenderingContext2d) -> Result<(), JsValue> {
         let mut data: Vec<u8> = Vec::with_capacity(self.w as usize * self.h as usize);
+        // normalise
+        // f64 implements partialord only?
+        let mut min = self.f[0];
+        let mut max = self.f[0];
+        for &value in &self.f {
+            if min > value {
+                min = value;
+            }
+            if max < value {
+                max = value;
+            }
+        }
         for value in &self.f {
-            add_to_colour_data(*value, &mut data);
+            add_to_colour_data((*value - min) / (max - min), &mut data);
         }
         let data = ImageData::new_with_u8_clamped_array(Clamped(&mut data), self.w)?;
         ctx.put_image_data(&data, 0.0, 0.0)
     }
 
+    #[allow(dead_code)]
     fn new_white_noise(width: u32, height: u32) -> Self {
         let size = width as usize * height as usize;
         let mut f: Vec<f64> = Vec::with_capacity(size);
