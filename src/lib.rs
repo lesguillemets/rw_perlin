@@ -89,6 +89,7 @@ impl Field {
     }
 }
 
+#[inline]
 fn add_to_colour_data(value: It, data: &mut Vec<u8>) {
     for _ in &['r', 'g', 'b'] {
         data.push((value * 255.0).floor() as u8);
