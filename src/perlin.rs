@@ -5,10 +5,11 @@ pub struct Perlin {
     grid_size: u32,
     z: TwoDArray<f64>,
     grads: TwoDArray<(f64, f64)>,
+    fade: fn(f64) -> f64,
 }
 
 impl Perlin {
-    pub fn initialize(grid_size: u32) -> Self {
+    pub fn initialize(grid_size: u32, fade: Option<fn(f64) -> f64>) -> Self {
         let vertex_count = grid_size + 1;
         let size = (vertex_count as usize) * (vertex_count as usize);
         let mut z = Vec::with_capacity(size);
@@ -37,6 +38,7 @@ impl Perlin {
                 w: grid_size + 1,
                 h: grid_size + 1,
             },
+            fade: fade.unwrap_or(fade_psi),
         }
     }
 
@@ -66,8 +68,8 @@ impl Perlin {
             let z: f64 = *self.z.at_unchecked(x0 + cx, y0 + cy);
 
             // if cx == 0 then 1-dx, else dx. not sure whichi is simpler
-            dep += fade_psi(((1 - cx) as f64 - dx).abs())
-                * fade_psi(((1 - cy) as f64 - dy).abs())
+            dep += (self.fade)(((1 - cx) as f64 - dx).abs())
+                * (self.fade)(((1 - cy) as f64 - dy).abs())
                 * (dot_prod(&v, &grad) + z * RANDOM_Z_WEIGHT);
         }
         Some(dep)
