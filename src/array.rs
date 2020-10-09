@@ -4,6 +4,7 @@ pub struct TwoDArray<T> {
     pub h: u32,
 }
 
+#[allow(dead_code)]
 impl<T> TwoDArray<T> {
     pub fn at(&self, x: u32, y: u32) -> Option<&T> {
         self.f.get(x as usize + y as usize * self.w as usize)
