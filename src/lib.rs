@@ -11,23 +11,22 @@ use web_sys::{CanvasRenderingContext2d, ImageData};
 
 #[wasm_bindgen]
 pub fn draw(ctx: &CanvasRenderingContext2d, width: u32, height: u32) -> Result<(), JsValue> {
-    let grids: u32 = 20;
+    let grids: u32 = 25;
     let perlin = Perlin::initialize(grids);
     let mut v: Vec<f64> = Vec::with_capacity((width * height) as usize);
     let scale = (grids as f64) / (max(width, height) as f64);
     for y in 0..height {
         for x in 0..width {
             // v.push(perlin.at(scale * x as f64, scale * y as f64).unwrap_or(0.0));
-            v.push(
-                perlin
-                    .at(scale / 4.0 * x as f64, scale / 4.0 * y as f64)
-                    .unwrap_or(0.0)
-                    + 0.25
-                        * perlin
-                            .at(scale / 2.0 * x as f64, scale / 2.0 * y as f64)
-                            .unwrap_or(0.0)
-                    + 1.0 / 8.0 * perlin.at(scale * x as f64, scale * y as f64).unwrap_or(0.0),
-            );
+            let mut here = 0.0;
+            for oct in 1..5 {
+                let oct = oct as f64;
+                here += oct
+                    * perlin
+                        .at(scale / oct * x as f64, scale / oct * y as f64)
+                        .unwrap_or(0.0)
+            }
+            v.push(here);
         }
     }
     let f = Field {
