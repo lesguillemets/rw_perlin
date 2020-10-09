@@ -143,15 +143,12 @@ impl Perlin {
         let mut dep: f64 = 0.0;
         for &(cx, cy) in &[(0u32, 0u32), (1, 0), (0, 1), (1, 1)] {
             let grad = *self.grads.at_unchecked(x0 + cx, y0 + cy);
-            let v = (
-                if cx == 0 { dx } else { 1.0 - dx },
-                if cy == 0 { dy } else { 1.0 - dy },
-            );
+            let v = (dx - cx as f64, dy - cy as f64);
             // add the random height
             let z: f64 = *self.z.at_unchecked(x0 + cx, y0 + cy);
 
-            dep += fade_psi(v.0.abs())
-                * fade_psi(v.1.abs())
+            dep += fade_psi(((1 - cx) as f64 - dx).abs())
+                * fade_psi(((1 - cy) as f64 - dy).abs())
                 * (dot_prod(&v, &grad) + z * RANDOM_Z_WEIGHT);
         }
         Some(dep)
