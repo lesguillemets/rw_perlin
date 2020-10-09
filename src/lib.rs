@@ -3,16 +3,22 @@ mod perlin;
 
 use crate::array::TwoDArray;
 use crate::perlin::Perlin;
-use js_sys::Math;
+use js_sys::{Date, Math};
 use std::cmp::max;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::Clamped;
-use web_sys::{CanvasRenderingContext2d, ImageData};
+use web_sys::{console, CanvasRenderingContext2d, ImageData};
 
 #[wasm_bindgen]
 pub fn draw(ctx: &CanvasRenderingContext2d, width: u32, height: u32) -> Result<(), JsValue> {
     let grids: u32 = 25;
+    let d0 = Date::now();
     let perlin = Perlin::initialize(grids, None);
+    let d1 = Date::now();
+    console::log_1(&JsValue::from_str(&format!(
+        "Took {:?} to initialize",
+        d1 - d0
+    )));
     let mut v: Vec<f64> = Vec::with_capacity((width * height) as usize);
     let scale = (grids as f64) / (max(width, height) as f64);
     for y in 0..height {
@@ -29,12 +35,17 @@ pub fn draw(ctx: &CanvasRenderingContext2d, width: u32, height: u32) -> Result<(
             v.push(here);
         }
     }
+    let d2 = Date::now();
+    console::log_1(&JsValue::from_str(&format!("Took {:?} to calc", d2 - d1)));
     let f = Field {
         f: v,
         w: width,
         h: height,
     };
-    f.to_canvas(ctx)
+    let result = f.to_canvas(ctx);
+    let d3 = Date::now();
+    console::log_1(&JsValue::from_str(&format!("Took {:?} to render", d3 - d2)));
+    result
 }
 
 // generics are (still) tricky to handle here
