@@ -44,6 +44,16 @@ impl Perlin {
         if x < 0.0 || y < 0.0 || x > (self.grid_size as f64) || y > (self.grid_size as f64) {
             return None;
         }
+        //  (x0,y0)
+        //  +--------------+
+        //  |\             |
+        //  | \ (dx,dy)    |
+        //  |  \           |
+        //  |   +(x,y)     |
+        //  | /            |
+        //  |/ v[0,1]      |
+        //  +--------------+ (x0+1, y0+1)
+        //
         let dx = x - x.floor();
         let dy = y - y.floor();
         let x0: u32 = x.floor() as u32;
@@ -55,6 +65,7 @@ impl Perlin {
             // add the random height
             let z: f64 = *self.z.at_unchecked(x0 + cx, y0 + cy);
 
+            // if cx == 0 then 1-dx, else dx. not sure whichi is simpler
             dep += fade_psi(((1 - cx) as f64 - dx).abs())
                 * fade_psi(((1 - cy) as f64 - dy).abs())
                 * (dot_prod(&v, &grad) + z * RANDOM_Z_WEIGHT);
